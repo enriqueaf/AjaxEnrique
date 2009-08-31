@@ -1,0 +1,3 @@
+## Clase para la presentación de los mensajes. Ejm: Firebug, Desktop ...
+
+Ev.mensajes = {};
