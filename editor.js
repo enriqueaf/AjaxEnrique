@@ -10,19 +10,27 @@ var Ev ={ // utilizamos como namespace
 		//~ tests: [],
 		stores: [],
 		editors: [],
-		items: []
+		items: [],
+		debug: true
 	},
 }
-Ev.create = function(){
-	console.log('entro');
-	var pru = new Ev.editor();
-	console.log(pru);
-	}
+
+
+
 
 renderizado = function(a){
-	console.log('a');
+	Ev.mensaje.debug(a);
 };
-
+Ev.create = function(){
+	new Ext.Viewport({
+		title: 'Visor para el editor',
+		items: new Ev.editor,
+		renderTo: Ext.getBody(),
+		layout:'fit',
+		hidden:false
+		//autoShow: true
+	});
+}
 Ev.dimBox = function(dimConf){
 	this.dimConf = dimConf;
 	this.xoffset = this.dimConf[0]; //valor al que corresponde left: 0px
@@ -34,17 +42,48 @@ Ev.dimBox = function(dimConf){
 		
 Ev.editor = function(config){
 	this.store =  Ev.getStore(this.Record);	
-	this.dim = new Ev.dimBox(this.dimConf);	
+	this.dim = new Ev.dimBox(this.dimConf);
 	//this.store.load();
-	this.items = new Ev.noteViewer({dim:this.dim,store:this.store});
-	
 	//Cada vez que cree un objeto grita
-	this.ObjetoCreado = function(obj){
-		console.log(id + 'eureca');
-		obj.on('cambiado',this.guardando);
+	
+	this.editor = new Ev.noteViewer({store:this.store,region:'center'})
+	var padre = this;
+	this.borrar= function(record){
+		//Forma cutre para borrar el DOM
+	Ext.get(record.data.ref).remove();
+	padre.store.remove(record);
+	};
+	this.zoom = function(event,toolEl,panel,tc){
+		Ev.mensaje.debug(tc);
+		if(tc.id=='up'){
+			this.editor.dim.xscale= this.editor.dim.xscale *2;
+			this.store.load();
 		};
-	this.items.on('CreateRobj',this.ObjetoCreado);
+		if(tc.id=='down'){
+			this.editor.dim.xscale= this.editor.dim.xscale / 2;
+			this.store.load();
+		};
+		}
+	this.items = this.editor;
+	
+	this.tools= [
+		{id: 'up',
+		handler: this.zoom,
+		scope: this},
+		{id: 'down',
+		handler: this.zoom,
+		scope: this}
+		];
+	this.guardar = function(obj){
+		padre.store.save();
+		}
+	this.ObjetoCreado = function(obj){
+		obj.on('cambiado',padre.guardar,this);
+		obj.on('borrar',padre.borrar,this);
+	};
+	this.editor.on('CreateRobj',this.ObjetoCreado);
 	Ext.apply(this,config);
+	
 	Ev.editor.superclass.constructor.call(this);	
 	};
 
@@ -54,10 +93,11 @@ Ext.extend(Ev.editor,Ext.Panel,{
 	guardando: function(obj){
 		return null;
 		},
-	layout: 'absolute',
-	renderTo: 'divrender',
-	width: 10000,
-    height: 1000
+	layout:'border',
+	title: 'Editor',
+	autoScroll: true
+	
+	
 	
 });
 

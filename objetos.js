@@ -3,7 +3,7 @@
 ///Sólo sirve para debug
 
 termine = function(a,b,c){
-	console.log('termine');
+	Ev.mensaje.log('termine');
 	};
 
 /* 
@@ -22,9 +22,16 @@ termine = function(a,b,c){
 Ev.noteViewer= function(config){
 		Ext.apply(this,config);
 		this.tpl.dim = this.dim;
+		// No interesa que actualize, demomento.
+		this.onUpdate = function(ds, record){
+			Ev.noteViewer.superclass.onUpdate.call(this,ds,record);
+			this.createRobject(record.data.ref,record);
+			Ev.mensaje.debug('Creando Objeto');
+			};
 		this.refresh = function(){
 			Ev.noteViewer.superclass.refresh.call(this);
 			// Cada vez que se recarge se borra this.robjects
+			Ev.mensaje.debug('Actualizando DataView')
 			this.robjects = [];
 		};
 		this.addEvents('CreateRobj');
@@ -38,18 +45,19 @@ Ev.noteViewer= function(config){
 
 Ext.extend(Ev.noteViewer,Ext.DataView,{
 	store: null,
-	dim: new Ev.dimBox([0,10,24,10,100]),
+	//loadingText:'Cargando...',
+	dim: new Ev.dimBox([0,10,24,10,30]),
 	tpl: new Ext.XTemplate(
     	'<div id="editor-gviewer">', 
 		'<tpl for=".">',
 		'<tpl if="objclass==\'note\'">', // solo para notes
-				'<div class="notebox " id="{[values.ref]}" style="position: absolute; ',
+				'<div class="notebox " id="{[values.ref]}" style="position: absolute;',
 				
 				//~ '{[Ev.htmlbox(values.start,values.duration,values.value,values.range)]}', //no permite llamar funciones dentro del contenido
 				'left: {[Math.round((values.start - this.dim.xoffset ) * this.dim.xscale)]}px; ',
 				'width: {[Math.round(values.duration * this.dim.xscale) ]}px; ' ,
-				'height: {[Math.round(this.dim.yscale) ]}px; ' ,
-				'top: {[Math.round((values.value/10) * this.dim.anchorGrid) ]}px; ' ,
+				'height: {[Math.round(this.dim.anchorGrid) ]}px; ' ,
+				'top: {[Math.round((values.value) * this.dim.anchorGrid) ]}px; ' ,
 
 				'">',
 				
@@ -62,24 +70,29 @@ Ext.extend(Ev.noteViewer,Ext.DataView,{
 		'</div>',{
 			//~ htmlbox : Ev.htmlbox,
 		}),
-	layout: 'absolute',
 	robjects: {}, // hash de los objetos representantes por su id 
 	robjectTypes:{
 		note: Ev.note ,
-	},	
+	},
+	itemSelector: 'div.notebox',
 	listeners: {
 		 beforeclick: function(dv,index,node,e){
 		 	//~ crear el robject si se hace click y éste no existe, es más económico de recursos
 		 	var id = node.id ;
-                    if(node.className.search('resizable') < 0){
-						console.log(id);
+                    if(!this.robjects[id]){
+						Ev.mensaje.debug(id);
 						record = this.store.getById(id);
+						Ev.mensaje.debug(this.store);
                     	this.createRobject(id,record);
 					};
 				},
 			},
 	createRobject: function(id,record){
-		this.robjects[id] = new Ev.note(record);
+		if(this.robjects[id]){
+			this.robjects[id].dd.destroy(true);
+			this.robjects[id].destroy(true);};
+		this.robjects[id] = new Ev.noteController(record,this.dim);
+		Ev.mensaje.debug(this.robjects[id]);
 		//Fire CreateRobj para poder añadir los handle a las notas para poder guardar
 		this.fireEvent('CreateRobj',this.robjects[id]);
 	}
@@ -88,28 +101,23 @@ Ext.extend(Ev.noteViewer,Ext.DataView,{
 
 
 
-Ev.note = function(record,config){
+Ev.noteView = function(el,dim,config){
 	Ext.apply(this,config);
-	el =  record.data.ref;
 	this.record = record;
-	this.dd = new Ext.dd.DD(el);
-	this.addEvents('endDrag','cambiado');
+	this.dd = new Ext.dd.DD(el,{scroll:true});
+	this.addEvents('endDrag');
 	//Para poder llamar a la función padre
 	var padre = this;
-	this.cambiando = function(){
-		this.fireEvent('cambiado',this);
-		};
 	// Tamaño del grid
-	this.dd.anchorGrid = this.anchorGrid;
 	//Modificando el funcionamiento por defecto de un DD
 	this.dd.endDrag = function() {
 			var dragEl = Ext.get(this.getDragEl());
 			var el = Ext.get(this.getEl());
 			var viewport = dragEl.getXY();
 			//Creando el grid
-			if(padre.debug){console.log(viewport[1]);};
-			viewport[1] = parseInt(viewport[1]/this.anchorGrid)*this.anchorGrid;
-			if(padre.debug){console.log(viewport[1]); };          
+			Ev.mensaje.debug(viewport[1]);
+			viewport[1] = (parseInt((viewport[1] - padre.dim.ymin)/padre.dim.anchorGrid)*padre.dim.anchorGrid)+padre.dim.ymin;
+			Ev.mensaje.debug(viewport[1]);          
 			el.applyStyles({position:'absolute'});
 			el.setXY(viewport);
 			el.setWidth(dragEl.getWidth());
@@ -119,18 +127,57 @@ Ev.note = function(record,config){
 	// Parametros obligatorios para Ext.resizable		
 	this.handles = 'e,w';
 	this.draggable = false;
-	this.on('endDrag',this.cambiando);
-	this.on('resize',this.cambiando);
-	Ev.note.superclass.constructor.call(this,el);
+	Ev.noteView.superclass.constructor.call(this,el);
 };
 
-Ext.extend(Ev.note, Ext.Resizable,{
+Ext.extend(Ev.noteView, Ext.Resizable,{
 	anchorGrid: 100,
 	dynamic: true,
 	pinned: false,
 	
 	});
 
+
+Ev.noteController = function(record,dim,config){
+	el = record.data.ref;
+	Ev.mensaje.debug(el);
+	//Boton Derecho
+	this.menu =	Ev.menuNote(this);
+	Ext.get(el).on('contextmenu',function(e){e.preventDefault();
+	Ev.mensaje.debug(e);
+	this.menu.showAt(e.getXY());},this);
+	this.dim=dim;
+	this.record = record;
+	this.addEvents('cambiado','borrar');
+	this.cambiando = function(){
+		var cEl = Ext.get(el);
+		var situacion = cEl.getXY();
+		this.record.set('duration',cEl.getWidth()/this.dim.xscale);
+		this.record.set('start',(situacion[0] + this.dim.xoffset)/this.dim.xscale);
+		this.record.set('value',(situacion[1] - this.dim.ymin )/ this.dim.anchorGrid);
+		///Proposito de debug
+		Ev.mensaje.log('Data.Duration:' + this.record.data.duration + ' Real:' + Ext.get(el).getWidth());
+		Ev.mensaje.log('Data.Start:' + this.record.data.start);
+		Ev.mensaje.log('Data.value:' + this.record.data.value);
+		
+		
+		this.record.commit();
+		this.fireEvent('cambiado',this);
+		
+	};
+	this.on('resize',this.cambiando,this);
+	this.on('endDrag',this.cambiando,this);
+	Ev.noteController.superclass.constructor.call(this,el);
+	
+};
+Ext.extend(Ev.noteController,Ev.noteView,{
+	//Estos son los eventos que modifican el objto el objeto
+	EventMod: {
+		endDrag:['start','value'],
+		resize:['duration']	
+	}
+
+});
 
 
 

@@ -63,7 +63,10 @@ Ev.store = Ext.extend(Ext.data.Store, {
         write : function(store, action, result, res, rs) {
         	/**if(store.showMessages) {
             MyDesktop.alertsystem.setAlert(res.success, res.message); // <-- show user-feedback for all write actions
-        };**/},
+        };**/
+		Ev.mensaje.log(res.message);
+		
+		},
         exception : function(proxy, type, action, options, res, arg) {
             if (type === 'remote') {
                 Ext.Msg.show({
