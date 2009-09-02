@@ -1,0 +1,87 @@
+<!--
+        This program is free software; you can redistribute it and/or modify
+        it under the terms of the GNU General Public License as published by
+        the Free Software Foundation; either version 2 of the License, or
+        (at your option) any later version.
+        
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+        GNU General Public License for more details.
+        
+        You should have received a copy of the GNU General Public License
+        along with this program; if not, write to the Free Software
+        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+        MA 02110-1301, USA.
+-->
+
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script src="http://extjs.com/deploy/dev/adapter/ext/ext-base.js" type="text/javascript"></script>
+		<script src="http://extjs.com/deploy/dev/ext-all-debug.js" type="text/javascript"></script>
+		<script src="editor.js" type="text/javascript"></script>
+		<script src="store.js" type="text/javascript"></script>
+		<script src="objetos.js" type="text/javascript"></script>
+		<script src="menu.js" type="text/javascript"></script>
+		<script src="mensajes.js" type="text/javascript"></script>
+
+
+	
+		<link href="http://extjs.com/deploy/dev/resources/css/ext-all.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+    body {
+        font-size: 11px;
+    }
+	.notebox {
+		top:0px   
+        border: 1px solid silver;
+        width: 100%;
+        height: 100%;
+        background-color: #ffffc0;
+		vertical-align: middle;
+		overflow: hidden;
+		text-align:center;}
+	.menu-config {
+		background-image:url(http://extjs.com/deploy/dev/resources/images/default/panel/tool-sprites.gif);
+		background-position:0 -90px;
+	
+	}
+#loading-mask{
+	position:absolute;
+	left:0;
+	top:0;
+	width:100%;
+	height:100%;
+	z-index:20000;
+	background-color:white;
+	}
+#loading{
+	position:absolute;
+	left:45%;
+	top:40%;
+	padding:2px;
+	z-index:20001;
+    height:auto;
+}
+
+    </style>
+    <script type="text/javascript">
+        Ext.onReady(Ev.create);
+    </script>
+    <title>Editor de notas</title>
+</head>
+
+
+<body>
+<div id="loading">Cargando...</div>
+<div id="loading-mask"></div>
+<div id="contenido"></div>
+
+<!--<div class="Contenedor" id="mueve">Lo puede mover como tu quiereas</div>
+<div class="Contenedor" id="otro">El grid es de 100 de alto, aunque se puede modificar</div> -->
+</body>
+</html>
