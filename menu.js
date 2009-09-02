@@ -31,3 +31,7 @@ Ev.menuNote = function(obj){
 		Ev.mensaje.debug(a);
 	return a; 
 };
+Ev.menuPanel = function(obj){
+	var b;
+	return b;
+};
