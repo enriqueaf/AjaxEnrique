@@ -24,12 +24,16 @@ renderizado = function(a){
 Ev.create = function(){
 	new Ext.Viewport({
 		title: 'Visor para el editor',
-		items: new Ev.editor,
-		renderTo: Ext.getBody(),
-		layout:'fit',
+		items: new Ev.editor({region:'center'}),
+		renderTo: 'contenido',
+		layout:'border',
 		hidden:false
 		//autoShow: true
 	});
+setTimeout(function(){
+	Ext.get('loading').remove();
+	Ext.get('loading-mask').fadeOut({remove:true});
+ }, 250); 
 }
 Ev.dimBox = function(dimConf){
 	this.dimConf = dimConf;
@@ -95,7 +99,8 @@ Ext.extend(Ev.editor,Ext.Panel,{
 		},
 	layout:'border',
 	title: 'Editor',
-	autoScroll: true
+	autoScroll: true,
+	renderTo: 'contenido'
 	
 	
 	

@@ -1,0 +1,30 @@
+body {
+        font-size: 11px;
+ }
+ .notebox {
+	top:0px   
+	border: 1px solid silver;
+	width: 100%;
+	height: 100%;
+	background-color: #ffffc0;
+	vertical-align: middle;
+	overflow: hidden;
+	text-align:center;}
+.menu-config {
+	background-image:url(http://extjs.com/deploy/dev/resources/images/default/panel/tool-sprites.gif);
+	background-position:0 -90px;}
+#loading-mask{
+	position:absolute;
+	left:0;
+	top:0;
+	width:100%;
+	height:100%;
+	z-index:20000;
+	background-color:white;}
+#loading{
+	position:absolute;
+	left:45%;
+	top:40%;
+	padding:2px;
+	z-index:20001;
+    height:auto;}
